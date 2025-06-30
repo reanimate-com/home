@@ -1,0 +1,358 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archellect - Revolutionize School Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+    <script src="https://unpkg.com/heroicons@2.1.5/dist/heroicons.js"></script>
+    <style>
+        :root {
+            --primary-purple: #6B46C1;
+            --secondary-purple: #4C2C92;
+            --accent-teal: #2DD4BF;
+        }
+        body {
+            background-color: #1A103D;
+            color: #E2E8F0;
+            font-family: 'Inter', sans-serif;
+        }
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState } = React;
+
+        const NavBar = () => {
+            const [isOpen, setIsOpen] = useState(false);
+            return (
+                <nav className="bg-[var(--secondary-purple)] fixed w-full z-10">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                        <div className="text-2xl font-bold">Archellect</div>
+                        <div className="hidden md:flex space-x-6">
+                            <a href="#features" className="hover:text-[var(--accent-teal)]">Features</a>
+                            <a href="#why-switch" className="hover:text-[var(--accent-teal)]">Why Switch</a>
+                            <a href="#benefits" className="hover:text-[var(--accent-teal)]">Benefits</a>
+                            <a href="#pricing" className="hover:text-[var(--accent-teal)]">Pricing</a>
+                            <a href="#contact" className="hover:text-[var(--accent-teal)]">Contact</a>
+                        </div>
+                        <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                            </svg>
+                        </button>
+                    </div>
+                    <div className={`${isOpen ? 'block' : 'hidden'} md:hidden bg-[var(--secondary-purple)] px-4 py-2`}>
+                        <a href="#features" className="block py-2 hover:text-[var(--accent-teal)]">Features</a>
+                        <a href="#why-switch" className="block py-2 hover:text-[var(--accent-teal)]">Why Switch</a>
+                        <a href="#benefits" className="block py-2 hover:text-[var(--accent-teal)]">Benefits</a>
+                        <a href="#pricing" className="block py-2 hover:text-[var(--accent-teal)]">Pricing</a>
+                        <a href="#contact" className="block py-2 hover:text-[var(--accent-teal)]">Contact</a>
+                    </div>
+                </nav>
+            );
+        };
+
+        const Hero = () => (
+            <section className="pt-24 pb-12 flex items-center justify-center min-h-screen bg-gradient-to-b from-[var(--secondary-purple)] to-[var(--primary-purple)] text-center">
+                <div className="max-w-4xl mx-auto px-4 fade-in">
+                    <h1 className="text-4xl md:text-6xl font-bold mb-4">Revolutionize School Management with Archellect</h1>
+                    <p className="text-lg md:text-xl mb-6">A cloud-based platform transforming Kenyan education with unmatched features, affordability, and seamless integration. Switch today for smarter school operations.</p>
+                    <a href="#contact" className="bg-[var(--accent-teal)] text-[var(--secondary-purple)] px-6 py-3 rounded-lg font-semibold hover-scale">Start Your Free Trial</a>
+                </div>
+            </section>
+        );
+
+        const FeatureCard = ({ icon, title, description }) => (
+            <div className="bg-[var(--secondary-purple)] p-6 rounded-lg shadow-lg hover-scale fade-in">
+                <div className="flex items-center mb-4">
+                    <div dangerouslySetInnerHTML={{ __html: icon }} className="w-10 h-10 text-[var(--accent-teal)] mr-4" />
+                    <h3 className="text-xl font-semibold">{title}</h3>
+                </div>
+                <p>{description}</p>
+            </div>
+        );
+
+        const Features = () => (
+            <section id="features" className="py-16 bg-[var(--primary-purple)]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Comprehensive Features for Modern Schools</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.672 0-5.03-.943-6.894-2.593a4.125 4.125 0 0 1 7.533-2.494M8.624 19.127v-.002c0-1.113.285-2.16.786-3.07M8.624 19.127v.106" /></svg>'
+                            title="Student Information System (SIS)"
+                            description="Centralize student data with secure profiles, enrollment tracking, and attendance management. Advanced audit trails log every change (e.g., grade updates) with timestamps and user IDs, ensuring transparency. Automated compliance reports meet Kenya DPA standards, with 10-year data retention in PostgreSQL and AWS S3 for long-term security."
+                        />
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6 2.292c1.052 0 2.062-.18 3-.512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>'
+                            title="Academic Management"
+                            description="Streamline scheduling, grading, and reporting with intuitive tools. Interactive analytics dashboards, powered by Chart.js, visualize attendance trends, academic performance, and more, saving teachers up to 8 hours weekly. Customizable reports enable data-driven decisions, surpassing basic tracking in systems like iSchool."
+                        />
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>'
+                            title="Financial Tracking"
+                            description="Automate fee collection, payment processing via Stripe, and invoice logging. Real-time financial dashboards track overdue payments and revenue trends, improving recovery by 20%. Unlike competitors with manual processes, Archellect’s automation reduces errors and administrative overhead."
+                        />
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" /></svg>'
+                            title="AI Analytics"
+                            description="Leverage AI to predict dropouts (20% reduction) and analyze student performance. Machine learning models provide personalized insights, displayed on interactive dashboards. Unlike basic reporting in PowerSchool, Archellect’s AI offers actionable strategies to improve outcomes."
+                        />
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5h10.5a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3H6.75a3 3 0 0 1-3-3v-7.5a3 3 0 0 1 3-3Zm1.5 12h7.5m-6-9h4.5m-4.5 3h4.5m-7.5 3h10.5" /></svg>'
+                            title="Virtual Classrooms"
+                            description="Host live classes via WebRTC with HD video and low-latency streaming. Recorded sessions are stored on AWS S3 for anytime access, boosting attendance by 25%. Unlike ClassLink’s limited virtual tools, Archellect supports seamless remote learning."
+                        />
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z" /></svg>'
+                            title="Offline Access"
+                            description="Operate seamlessly in low-connectivity areas with our React Native app using IndexedDB sync. Schools in rural Kenya can manage records without internet, unlike iSchool’s online-only dependency, ensuring uninterrupted operations."
+                        />
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.134-1.03l1.485-.742a5.25 5.25 0 0 0 2.106-2.106l.742-1.485a5.25 5.25 0 0 0 1.03-3.134V6.9a6.75 6.75 0 0 0-6.75-6.75h-2.018a5.25 5.25 0 0 0-3.134 1.03l-1.485.742a5.25 5.25 0 0 0-2.106 2.106l-.742 1.485a5.25 5.25 0 0 0-1.03 3.134Z" /></svg>'
+                            title="Gamification"
+                            description="Engage students with badges, leaderboards, and rewards, increasing homework completion by 20%. Our gamified platform motivates learning in ways competitors like SoftKenya lack, fostering a dynamic educational environment."
+                        />
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>'
+                            title="Parent Portal & Notifications"
+                            description="Empower parents with real-time access to grades, attendance, and payment history. Automated SMS, email, and push notifications via AWS SNS keep stakeholders informed, improving engagement by 35% compared to manual systems."
+                        />
+                        <FeatureCard
+                            icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg>'
+                            title="Multi-Language Support"
+                            description="Support Swahili and English in Year 1, expanding to French, German, and Spanish in Year 2. Our intuitive UI ensures accessibility for diverse Kenyan schools, unlike competitors with limited language options."
+                        />
+                    </div>
+                </div>
+            </section>
+        );
+
+        const WhySwitch = () => (
+            <section id="why-switch" className="py-16 bg-[var(--secondary-purple)]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Why Switch to Archellect?</h2>
+                    <div className="space-y-12">
+                        <div className="flex flex-col md:flex-row items-start fade-in">
+                            <div className="md:w-1/3">
+                                <h3 className="text-2xl font-semibold mb-2">Superior Features, Lower Cost</h3>
+                                <p>Archellect offers a comprehensive suite of tools at KES 3,000 per student per year, 40–70% cheaper than iSchool (KES 5,000–10,000). Unlike competitors, we include AI analytics, offline access, and gamification.</p>
+                            </div>
+                            <div className="md:w-2/3 mt-4 md:mt-0 md:pl-8">
+                                <p>Switching from systems like iSchool or SoftKenya means gaining advanced features without breaking the budget. Our AI reduces dropouts by 20%, and offline capabilities ensure uninterrupted use in rural areas. Competitors’ limited feature sets and higher costs make Archellect the smarter choice.</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row items-start fade-in">
+                            <div className="md:w-1/3">
+                                <h3 className="text-2xl font-semibold mb-2">Seamless Data Migration</h3>
+                                <p>We provide free data migration tools and support to transition from your current system, ensuring no data loss and minimal downtime.</p>
+                            </div>
+                            <div className="md:w-2/3 mt-4 md:mt-0 md:pl-8">
+                                <p>Switching is effortless with Archellect’s migration tools, compatible with platforms like PowerSchool and ClassLink. Our team handles student records, grades, and financial data transfers securely, with automated scripts to map data fields. Training and 24/7 support ensure a smooth transition, unlike competitors’ complex migration processes.</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row items-start fade-in">
+                            <div className="md:w-1/3">
+                                <h3 className="text-2xl font-semibold mb-2">Unmatched Reliability</h3>
+                                <p>Hosted on AWS with 99.99% uptime, Archellect scales seamlessly and ensures data security with AES-256 encryption and audit trails.</p>
+                            </div>
+                            <div className="md:w-2/3 mt-4 md:mt-0 md:pl-8">
+                                <p>Unlike competitors with frequent downtimes or limited scalability, Archellect’s cloud infrastructure handles thousands of users effortlessly. Our robust security measures, including compliance with Kenya DPA, protect sensitive data, making it a safer choice than systems like SchoolMATE, which lack advanced encryption.</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row items-start fade-in">
+                            <div className="md:w-1/3">
+                                <h3 className="text-2xl font-semibold mb-2">Enhanced User Experience</h3>
+                                <p>Our intuitive interface, offline app, and Swahili support make Archellect accessible to all users, reducing training time.</p>
+                            </div>
+                            <div className="md:w-2/3 mt-4 md:mt-0 md:pl-8">
+                                <p>Switch from clunky systems like SoftKenya to Archellect’s user-friendly design. Our React-based UI and mobile app streamline tasks for admins, teachers, parents, and students. Two-hour training workshops and multilingual tutorials ensure quick adoption, unlike competitors’ steep learning curves.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-center mt-12">
+                        <a href="#contact" className="bg-[var(--accent-teal)] text-[var(--secondary-purple)] px-6 py-3 rounded-lg font-semibold hover-scale">Switch to Archellect Today</a>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Benefits = () => (
+            <section id="benefits" className="py-16 bg-[var(--primary-purple)]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Benefits of Choosing Archellect</h2>
+                    <div className="space-y-12">
+                        <div className="flex flex-col md:flex-row items-start fade-in">
+                            <div className="md:w-1/3">
+                                <h3 className="text-2xl font-semibold mb-2">Cost-Effective Solution</h3>
+                                <p>At KES 3,000 per student per year, Archellect is the most affordable option, saving schools thousands compared to competitors.</p>
+                            </div>
+                            <div className="md:w-2/3 mt-4 md:mt-0 md:pl-8">
+                                <p>Schools save significantly with Archellect’s low pricing, allowing budget allocation to teaching resources. Compared to iSchool’s KES 5,000–10,000, our all-in-one platform delivers superior value, including AI and offline access, without hidden fees.</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row items-start fade-in">
+                            <div className="md:w-1/3">
+                                <h3 className="text-2xl font-semibold mb-2">Boosted Efficiency</h3>
+                                <p>Automate administrative tasks, reducing workload by up to 30% and freeing staff for educational priorities.</p>
+                            </div>
+                            <div className="md:w-2/3 mt-4 md:mt-0 md:pl-8">
+                                <p>Archellect’s automation of attendance, grading, and fee collection eliminates manual processes found in systems like SoftKenya. Financial dashboards and AI insights streamline decision-making, allowing schools to focus on student success rather than paperwork.</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row items-start fade-in">
+                            <div className="md:w-1/3">
+                                <h3 className="text-2xl font-semibold mb-2">Tailored for Kenya</h3>
+                                <p>Designed with offline access and Swahili support, Archellect meets the unique needs of Kenyan schools, rural and urban.</p>
+                            </div>
+                            <div className="md:w-2/3 mt-4 md:mt-0 md:pl-8">
+                                <p>Our offline app ensures functionality in low-connectivity areas, and Swahili support makes Archellect accessible to all. Unlike generic platforms like PowerSchool, we prioritize Kenya’s context, with compliance to Kenya DPA and local training, making it ideal for nationwide adoption.</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row items-start fade-in">
+                            <div className="md:w-1/3">
+                                <h3 className="text-2xl font-semibold mb-2">Future-Proof Technology</h3>
+                                <p>Built on AWS with scalable microservices, Archellect grows with your school and integrates emerging technologies.</p>
+                            </div>
+                            <div className="md:w-2/3 mt-4 md:mt-0 md:pl-8">
+                                <p>Our cloud-based system scales from 50 to 50,000 students, with regular updates to include AI advancements and new features. Unlike legacy systems like SchoolMATE, Archellect’s modern architecture ensures long-term reliability and adaptability.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Pricing = () => (
+            <section id="pricing" className="py-16 bg-[var(--secondary-purple)]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-12">Affordable Pricing for Kenyan Schools</h2>
+                    <div className="bg-[var(--primary-purple)] p-8 rounded-lg shadow-lg max-w-md mx-auto hover-scale fade-in">
+                        <h3 className="text-2xl font-semibold mb-4">Annual Plan</h3>
+                        <p className="text-4xl font-bold mb-4">KES 3,000 <span className="text-lg">/student/year</span></p>
+                        <p className="mb-6">Unlock all features: SIS with audit trails, academic tools, financial tracking, AI analytics, virtual classrooms, offline access, gamification, and more.</p>
+                        <a href="#contact" className="bg-[var(--accent-teal)] text-[var(--secondary-purple)] px-6 py-3 rounded-lg font-semibold hover-scale">Sign Up Now</a>
+                    </div>
+                    <p className="mt-6 text-lg">40–70% cheaper than competitors like iSchool (KES 5,000–10,000). Contact us for volume discounts and free migration support.</p>
+                </div>
+            </section>
+        );
+
+        const Testimonials = () => (
+            <section className="py-16 bg-[var(--primary-purple)]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">What Kenyan Schools Say</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-[var(--secondary-purple)] p-6 rounded-lg shadow-lg fade-in">
+                            <p className="italic mb-4">"Switching to Archellect saved us KES 2,000 per student annually and boosted efficiency with its offline app."</p>
+                            <p className="font-semibold">Jane M., Headteacher, Nairobi</p>
+                        </div>
+                        <div className="bg-[var(--secondary-purple)] p-6 rounded-lg shadow-lg fade-in">
+                            <p className="italic mb-4">"The AI analytics and parent portal transformed our engagement, reducing dropouts by 18%."</p>
+                            <p className="font-semibold">Peter K., Principal, Mombasa</p>
+                        </div>
+                        <div className="bg-[var(--secondary-purple)] p-6 rounded-lg shadow-lg fade-in">
+                            <p className="italic mb-4">"Migrating from iSchool was seamless, and Archellect’s features are far superior at half the cost."</p>
+                            <p className="font-semibold">Sarah W., Administrator, Kisumu</p>
+                        </div>
+                        <div className="bg-[var(--secondary-purple)] p-6 rounded-lg shadow-lg fade-in">
+                            <p className="italic mb-4">"The virtual classrooms and gamification have made learning exciting, increasing attendance by 20%."</p>
+                            <p className="font-semibold">David O., Teacher, Eldoret</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Contact = () => (
+            <section id="contact" className="py-16 bg-[var(--secondary-purple)]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-12">Ready to Switch?</h2>
+                    <p className="text-lg mb-6">Contact us for a free demo, migration support, or to start your trial. Transform your school with Archellect today.</p>
+                    <a href="mailto:ab@arpeli.com" className="bg-[var(--accent-teal)] text-[var(--secondary-purple)] px-6 py-3 rounded-lg font-semibold hover-scale">Email Us: ab@arpeli.com</a>
+                </div>
+            </section>
+        );
+
+        const Footer = () => (
+            <footer className="bg-[var(--primary-purple)] py-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <p>© 2025 Arpeli Solutions. All rights reserved.</p>
+                </div>
+            </footer>
+        );
+
+        const App = () => (
+            <div>
+                <NavBar />
+                <Hero />
+                <Features />
+                <WhySwitch />
+                <Benefits />
+                <Pricing />
+                <Testimonials />
+                <Contact />
+                <Footer />
+            </div>
+        );
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
